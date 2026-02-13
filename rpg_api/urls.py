@@ -15,8 +15,6 @@ urlpatterns = [
     
     # API Endpoints
     path('api/v1/auth/', include('authentication.urls')),
-    path('api/v1/game/', include('game.urls')),
-    path('api/v1/core/', include('core.urls')),
 ]
 
 # Media files
