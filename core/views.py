@@ -1,34 +1,32 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .models import Profile
-from .serializers import UserSerializer, ProfileSerializer
+from .serializers import UserSerializer
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for users (read-only)"""
+class UserViewSet(viewsets.ModelViewSet):
+    """ViewSet for users - agora com funcionalidades completas de perfil"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    @action(detail=False, methods=['get'])
-    def me(self, request):
-        """Get current user's information"""
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
-
-
-class ProfileViewSet(viewsets.ModelViewSet):
-    """ViewSet for user profiles"""
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
     def get_queryset(self):
-        """Filter profiles based on user"""
-        return Profile.objects.filter(user=self.request.user)
+        """Filter to current user only"""
+        return User.objects.filter(id=self.request.user.id)
     
-    def perform_create(self, serializer):
-        """Associate profile with current user"""
-        serializer.save(user=self.request.user)
+    @action(detail=False, methods=['get', 'put', 'patch'])
+    def me(self, request):
+        """Get or update current user's profile"""
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        else:
+            serializer = self.get_serializer(request.user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ProfileViewSet removido - usando UserViewSet para gerenciar perfis

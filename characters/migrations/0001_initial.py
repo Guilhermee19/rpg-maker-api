@@ -20,7 +20,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('player_name', models.CharField(blank=True, max_length=120, null=True)),
-                ('name', models.CharField(max_length=120)),
                 ('system_key', models.CharField(default='EPICORPG', max_length=30)),
                 ('xp_total', models.IntegerField(default=0)),
                 ('portrait_url', models.URLField(blank=True, null=True)),

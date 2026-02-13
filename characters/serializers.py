@@ -8,7 +8,6 @@ class CharacterSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "player_name",
-            "name",
             "system_key",
             "xp_total",
             "portrait_url",
