@@ -71,9 +71,9 @@ python manage.py runserver
 
 Após executar o servidor, acesse:
 
-- **Swagger UI**: http://localhost:8000/api/docs/
-- **ReDoc**: http://localhost:8000/api/redoc/
-- **Schema JSON**: http://localhost:8000/api/schema/
+- **Swagger UI**: http://localhost:8001/api/docs/
+- **ReDoc**: http://localhost:8001/api/redoc/
+- **Schema JSON**: http://localhost:8001/api/schema/
 
 ## 🎮 Endpoints Disponíveis
 

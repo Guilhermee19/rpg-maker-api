@@ -40,7 +40,7 @@ def main():
     print("\n📚 Próximos passos:")
     print("1. Criar superusuário: python manage.py createsuperuser")
     print("2. Executar servidor: python manage.py runserver")
-    print("3. Acessar documentação: http://localhost:8000/api/docs/")
+    print("3. Acessar documentação: http://localhost:8001/api/docs/")
     
 
 if __name__ == "__main__":
