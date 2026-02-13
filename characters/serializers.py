@@ -10,7 +10,7 @@ class CharacterSerializer(serializers.ModelSerializer):
             "player_name",
             "system_key",
             "xp_total",
-            "portrait_url",
+            "avatar_url ",
             "sheet_data",
             "is_active",
             "created_at",

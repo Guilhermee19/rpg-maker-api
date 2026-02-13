@@ -28,7 +28,7 @@ class CharacterAdmin(admin.ModelAdmin):
             'fields': ('id', 'user', 'player_name', 'system_key')
         }),
         ('Progressão', {
-            'fields': ('xp_total', 'portrait_url')
+            'fields': ('xp_total', 'avatar_url')
         }),
         ('Dados da Ficha', {
             'fields': ('sheet_data',),

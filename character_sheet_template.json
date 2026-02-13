@@ -1,222 +1,26 @@
 {
-  "basic_info": {
-    "age": "",
-    "race": "",
-    "class": "",
-    "background": "",
-    "alignment": "",
-    "level": 1
-  },
   "attributes": {
-    "strength": 10,
-    "dexterity": 10,
-    "constitution": 10,
-    "intelligence": 10,
-    "wisdom": 10,
-    "charisma": 10
+    "vigor": {"value": 5, "xp": 0, "fatigue": 0},
+    "agility": {"value": 5, "xp": 0, "fatigue": 0},
+    "intelligence": {"value": 5, "xp": 0, "fatigue": 0}
   },
-  "derived_stats": {
-    "armor_class": 10,
-    "hit_points": {
-      "max": 10,
-      "current": 10,
-      "temporary": 0
-    },
-    "speed": 30,
-    "proficiency_bonus": 2
+  "secondary": {
+    "difficulty_target": 12,
+    "willpower": {"value": 5, "xp": 0},
+    "damage_bonus": 0,
+    "perception": {"value": 5, "xp": 0},
+    "speed": 5,
+    "size": {"value": "MEDIO"},
+    "hit_points": {"value": 10, "xp": 0},
+    "wounds": 0,
+    "carry": {"heavy": 25, "max": {"min": 75, "max": 100}}
   },
-  "saving_throws": {
-    "strength": {
-      "value": 0,
-      "proficient": false
-    },
-    "dexterity": {
-      "value": 0,
-      "proficient": false
-    },
-    "constitution": {
-      "value": 0,
-      "proficient": false
-    },
-    "intelligence": {
-      "value": 0,
-      "proficient": false
-    },
-    "wisdom": {
-      "value": 0,
-      "proficient": false
-    },
-    "charisma": {
-      "value": 0,
-      "proficient": false
-    }
-  },
-  "skills": {
-    "acrobatics": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "dexterity"
-    },
-    "animal_handling": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "wisdom"
-    },
-    "arcana": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "intelligence"
-    },
-    "athletics": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "strength"
-    },
-    "deception": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "charisma"
-    },
-    "history": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "intelligence"
-    },
-    "insight": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "wisdom"
-    },
-    "intimidation": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "charisma"
-    },
-    "investigation": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "intelligence"
-    },
-    "medicine": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "wisdom"
-    },
-    "nature": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "intelligence"
-    },
-    "perception": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "wisdom"
-    },
-    "performance": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "charisma"
-    },
-    "persuasion": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "charisma"
-    },
-    "religion": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "intelligence"
-    },
-    "sleight_of_hand": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "dexterity"
-    },
-    "stealth": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "dexterity"
-    },
-    "survival": {
-      "value": 0,
-      "proficient": false,
-      "attribute": "wisdom"
-    }
-  },
-  "combat": {
-    "initiative": 0,
-    "attacks": [
-      {
-        "name": "Punho Desarmado",
-        "attack_bonus": 0,
-        "damage": "1 + modificador de Força",
-        "damage_type": "contundente",
-        "range": "Corpo a corpo",
-        "notes": ""
-      }
-    ],
-    "death_saves": {
-      "successes": 0,
-      "failures": 0
-    }
-  },
-  "equipment": {
-    "armor": {
-      "name": "",
-      "ac": 0,
-      "type": "",
-      "stealth_disadvantage": false
-    },
-    "shield": {
-      "name": "",
-      "ac_bonus": 0
-    },
-    "weapons": [],
-    "inventory": {
-      "currency": {
-        "copper": 0,
-        "silver": 0,
-        "gold": 0,
-        "platinum": 0
-      },
-      "items": []
-    },
-    "weight": {
-      "current": 0,
-      "capacity": 0
-    }
-  },
-  "spellcasting": {
-    "spellcasting_ability": "",
-    "spell_attack_bonus": 0,
-    "spell_save_dc": 8,
-    "spells_known": [],
-    "spell_slots": {
-      "level_1": {
-        "max": 0,
-        "used": 0
-      },
-      "level_2": {
-        "max": 0,
-        "used": 0
-      },
-      "level_3": {
-        "max": 0,
-        "used": 0
-      }
-    }
-  },
-  "features_traits": {
-    "features": [],
-    "traits": [],
-    "ideals": [],
-    "bonds": [],
-    "flaws": []
-  },
-  "notes": {
-    "backstory": "",
-    "appearance": "",
-    "personality": "",
-    "other_notes": ""
-  }
+  "virtues": [],
+  "defects": [],
+  "skills": [],
+  "attacks": [],
+  "armors": [],
+  "money_treasures": [],
+  "items_equipment": [],
+  "notes": ""
 }

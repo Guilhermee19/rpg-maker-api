@@ -30,10 +30,9 @@ class Character(models.Model):
     )
 
     player_name = models.CharField(max_length=120, blank=True, null=True)  # "Jogador"
+    avatar_url  = models.URLField(blank=True, null=True)
     system_key = models.CharField(max_length=30, default="EPICORPG")
-
     xp_total = models.IntegerField(default=0)
-    portrait_url = models.URLField(blank=True, null=True)
 
     sheet_data = models.JSONField(default=get_default_sheet_data)
 
