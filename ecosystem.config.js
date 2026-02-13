@@ -37,10 +37,10 @@ module.exports = {
     listen_timeout: 3000,
     
     // Configurações de saúde
-    health_check_http: {
-      url: 'http://localhost:8001',
-      interval: 30000,
-      timeout: 5000
-    }
+    // health_check_http: {
+    //   url: 'http://localhost:8001',
+    //   interval: 30000,
+    //   timeout: 5000
+    // }
   }]
 };
