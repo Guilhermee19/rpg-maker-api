@@ -119,7 +119,7 @@ REST_FRAMEWORK = {
 
 # DRF Spectacular (Swagger)
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'RPG Maker API - Auth Only',
+    'TITLE': 'RPG Maker API',
     'DESCRIPTION': 'API de autenticação para sistema de RPG',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
