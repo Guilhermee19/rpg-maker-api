@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Session, SessionMember, SessionInvite, SessionCharacter
+from core.models import UserProfile
 
 
 # Desregistrar modelos padrão do Django para customizar
@@ -19,9 +20,43 @@ try:
 except admin.sites.NotRegistered:
     pass
 
+
+# Inline para UserProfile
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    extra = 0
+    fields = ['profile_image', 'is_delete']
+    verbose_name = 'Perfil'
+    verbose_name_plural = 'Perfil'
+
+
 # Classe personalizada para User
 class CustomUserAdmin(BaseUserAdmin):
     search_fields = ['username', 'email', 'first_name', 'last_name']
+    
+    # Remover completamente seções de permissões - apenas campos essenciais
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Informações pessoais', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Datas importantes', {'fields': ('last_login', 'date_joined')}),
+        ('Status', {'fields': ('is_active',)}),
+    )
+    
+    # Fieldsets para criação de usuário
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'email'),
+        }),
+    )
+    
+    # Remover campos de permissões das listas
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined')
+    list_filter = ('is_active', 'date_joined')
+    readonly_fields = ('last_login', 'date_joined')
+    
+    # Adicionar inline do perfil
+    inlines = [UserProfileInline]
 
 # Registrar User manualmente
 admin.site.register(User, CustomUserAdmin)
