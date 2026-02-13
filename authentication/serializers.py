@@ -16,15 +16,15 @@ class EmailTokenObtainPairSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         if not email or not password:
-            raise AuthenticationFailed('Email and password are required')
+            raise AuthenticationFailed('Email e password são obrigatórios')
 
-        user = User.objects.filter(email__iexact=email).first()
+        # Usando o novo backend de autenticação por email
+        user = authenticate(username=email, password=password)
         if not user:
-            raise AuthenticationFailed('Invalid credentials')
+            raise AuthenticationFailed('Email ou senha inválidos')
 
-        user = authenticate(username=user.username, password=password)
-        if not user:
-            raise AuthenticationFailed('Invalid credentials')
+        if not user.is_active:
+            raise AuthenticationFailed('Conta desativada')
 
         refresh = RefreshToken.for_user(user)
         return {
@@ -32,3 +32,27 @@ class EmailTokenObtainPairSerializer(serializers.Serializer):
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data,
         }
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name']
+    
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Este email já está em uso.')
+        return value
+    
+    def validate(self, data):
+        if data['password'] != data['password_confirm']:
+            raise serializers.ValidationError('As senhas não coincidem.')
+        return data
+    
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        user = User.objects.create_user(**validated_data)
+        return user

@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from .serializers import EmailTokenObtainPairSerializer, UserRegisterSerializer
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -19,79 +20,42 @@ class UserProfileSerializer(serializers.ModelSerializer):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    """Registrar novo usuário"""
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
+    """Registrar novo usuário com email obrigatório"""
+    serializer = UserRegisterSerializer(data=request.data)
     
-    if not all([username, email, password]):
-        return Response(
-            {'error': 'Username, email e password são obrigatórios'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    if User.objects.filter(username=username).exists():
-        return Response(
-            {'error': 'Username já existe'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    if User.objects.filter(email=email).exists():
-        return Response(
-            {'error': 'Email já existe'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    user = User.objects.create_user(
-        username=username, 
-        email=email, 
-        password=password
-    )
-    
-    # Generate tokens
-    refresh = RefreshToken.for_user(user)
-    access_token = refresh.access_token
-    
-    return Response({
-        'message': 'Usuário criado com sucesso',
-        'user': UserProfileSerializer(user).data,
-        'tokens': {
-            'access': str(access_token),
-            'refresh': str(refresh)
-        }
-    }, status=status.HTTP_201_CREATED)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login(request):
-    """Login do usuário"""
-    username = request.data.get('username')
-    password = request.data.get('password')
-    
-    if not username or not password:
-        return Response(
-            {'error': 'Username e password são obrigatórios'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    user = authenticate(username=username, password=password)
-    if user:
+    if serializer.is_valid():
+        user = serializer.save()
+        
         # Generate tokens
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
         
         return Response({
-            'message': 'Login realizado com sucesso',
+            'message': 'Usuário criado com sucesso',
             'user': UserProfileSerializer(user).data,
             'tokens': {
                 'access': str(access_token),
                 'refresh': str(refresh)
             }
+        }, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    """Login do usuário com email"""
+    serializer = EmailTokenObtainPairSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        return Response({
+            'message': 'Login realizado com sucesso',
+            **serializer.validated_data
         }, status=status.HTTP_200_OK)
     
     return Response(
-        {'error': 'Credenciais inválidas'}, 
+        {'error': 'Email ou senha inválidos'}, 
         status=status.HTTP_401_UNAUTHORIZED
     )
 
