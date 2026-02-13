@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: 'finance-django',
+    name: 'rpg-maker-api',
     script: './start_django.sh',
     interpreter: 'bash',
     cwd: './',

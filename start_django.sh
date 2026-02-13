@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para iniciar Django com PM2
-# Para usar: pm2 start start_django.sh --name finance-django
+# Para usar: pm2 start start_django.sh --name rpg-maker-api
 
 # Definir diretório do projeto
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"

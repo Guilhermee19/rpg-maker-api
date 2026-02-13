@@ -10,7 +10,7 @@
 
 ### Opção 1: Comando direto com PM2
 ```bash
-pm2 start start_django.sh --name finance-django
+pm2 start start_django.sh --name rpg-maker-api
 ```
 
 ### Opção 2: Usando arquivo de configuração (Recomendado)
@@ -26,16 +26,16 @@ pm2 start ecosystem.config.js
 pm2 status
 
 # Ver logs em tempo real
-pm2 logs finance-django
+pm2 logs rpg-maker-api
 
 # Parar a aplicação
-pm2 stop finance-django
+pm2 stop rpg-maker-api
 
 # Reiniciar a aplicação
-pm2 restart finance-django
+pm2 restart rpg-maker-api
 
 # Deletar a aplicação
-pm2 delete finance-django
+pm2 delete rpg-maker-api
 
 # Monitorar recursos
 pm2 monit
