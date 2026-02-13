@@ -42,7 +42,7 @@ if command -v gunicorn &> /dev/null; then
     echo "Iniciando servidor com Gunicorn..."
     # Usar gunicorn para produção (recomendado)
     exec gunicorn rpg_api.wsgi:application \
-        --bind 0.0.0.0:8000 \
+        --bind 0.0.0.0:8001 \
         --workers 3 \
         --timeout 30 \
         --keep-alive 5 \
@@ -55,7 +55,7 @@ else
     pip install gunicorn
     echo "Iniciando servidor com Gunicorn..."
     exec gunicorn rpg_api.wsgi:application \
-        --bind 0.0.0.0:8000 \
+        --bind 0.0.0.0:8001 \
         --workers 3 \
         --timeout 30 \
         --keep-alive 5 \

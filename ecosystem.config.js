@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
     name: 'rpg-maker-api',
-    script: './start_django.sh',
-    interpreter: 'bash',
-    cwd: './',
+    script: 'bash',
+    args: './start_django.sh', // Passamos o script como argumento para o bash
+    cwd: '/root/projects/rpg-maker-api',
     
     // Configurações de ambiente
     env: {
@@ -38,7 +38,7 @@ module.exports = {
     
     // Configurações de saúde
     health_check_http: {
-      url: 'http://localhost:8000',
+      url: 'http://localhost:8001',
       interval: 30000,
       timeout: 5000
     }
