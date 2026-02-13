@@ -3,20 +3,28 @@ from django import forms
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Session, SessionMember, SessionInvite, SessionCharacter
 
 
-# Garantir que User tenha search_fields para autocomplete
+# Desregistrar modelos padrão do Django para customizar
 try:
     admin.site.unregister(User)
 except admin.sites.NotRegistered:
     pass
 
-@admin.register(User)
-class UserAdmin(BaseUserAdmin):
+try:
+    admin.site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass
+
+# Classe personalizada para User
+class CustomUserAdmin(BaseUserAdmin):
     search_fields = ['username', 'email', 'first_name', 'last_name']
+
+# Registrar User manualmente
+admin.site.register(User, CustomUserAdmin)
 
 
 class SessionMemberInline(admin.TabularInline):
@@ -183,3 +191,13 @@ class SessionCharacterAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'session', 'character')
+
+
+# Personalização do admin site
+admin.site.site_header = 'RPG Maker - Administração'  
+admin.site.site_title = 'RPG Admin'
+admin.site.index_title = 'Painel Administrativo'
+
+# Personalizar o modelo User para aparecer como seção própria  
+User._meta.verbose_name = 'Usuário'
+User._meta.verbose_name_plural = 'Usuários'
