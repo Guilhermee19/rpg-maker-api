@@ -1,0 +1,27 @@
+def default_epicorpg_sheet():
+    return {
+        "attributes": {
+            "vigor": {"value": 5, "xp": 0, "fatigue": 0},
+            "agility": {"value": 5, "xp": 0, "fatigue": 0},
+            "intelligence": {"value": 5, "xp": 0, "fatigue": 0},
+        },
+        "secondary": {
+            "difficulty_target": 12,
+            "willpower": {"value": 5, "xp": 0},
+            "damage_bonus": 0,
+            "perception": {"value": 5, "xp": 0},
+            "speed": 5,
+            "size": {"value": "MEDIO"},
+            "hit_points": {"value": 10, "xp": 0},
+            "wounds": 0,
+            "carry": {"heavy": 25, "max": {"min": 75, "max": 100}},
+        },
+        "virtues": [],
+        "defects": [],
+        "skills": [],
+        "attacks": [],
+        "armors": [],
+        "money_treasures": [],
+        "items_equipment": [],
+        "notes": "",
+    }

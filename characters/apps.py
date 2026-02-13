@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 
-class GameConfig(AppConfig):
+class CharactersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'game'
+    name = 'characters'
+    verbose_name = 'Personagens'
