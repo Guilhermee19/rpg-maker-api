@@ -1,0 +1,1 @@
+# Session app - Gerenciamento de sessões de RPG

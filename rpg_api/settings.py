@@ -39,6 +39,7 @@ LOCAL_APPS = [
     'authentication',
     'core',
     'characters',
+    'session',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -123,20 +124,26 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
 }
 
 # DRF Spectacular (Swagger)
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RPG Maker API',
-    'DESCRIPTION': 'API de autenticação para sistema de RPG',
+    'DESCRIPTION': 'API para sistema de RPG com autenticação e gerenciamento de personagens',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/v1/',
     'COMPONENT_SPLIT_REQUEST': True,
     'SWAGGER_UI_SETTINGS': {
         'deepLinking': True,
         'persistAuthorization': True,
         'displayOperationId': False,
     },
+    'PREPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.preprocess_exclude_path_format',
+    ],
 }
 
 # JWT Settings

@@ -44,15 +44,15 @@ Este documento descreve as fases de desenvolvimento, a estrutura de dados e a or
 
 ### A. Usuários & Personagens
 * **`User`**: Custom model (auth).
-* **`Character`**: Core do personagem (id, owner, name, system).
+* **`Character`**: Core do personagem (id, owner, system).
 * **`CharacterAttribute`**: EAV Model (key, value, group) para flexibilidade de atributos.
 
 ### B. Sessões e Acessos
 | Tabela | Campos Chave |
 | :--- | :--- |
-| `RPGSession` | `id, system, gm_user, status, created_at` |
+| `RPGSession` | `id, system, master_user, status, created_at` |
 | `SessionInvite` | `code, session_id, expires_at, max_uses, is_active` |
-| `SessionMember` | `session_id, user_id, role (GM/Player)` |
+| `SessionMember` | `session_id, user_id, role (Master/Player)` |
 
 ### C. O Tabuleiro (Mapas & Tokens)
 * **`SessionMap`**: Armazena a imagem de fundo, `grid_size` e se está ativo.
@@ -87,7 +87,7 @@ backend/
 
 ***Nota Importante:***
 
-Mestre (GM): Possui controle total da sessão. Pode alterar qualquer MapToken, SessionMap e visualizar todos os CharacterAttributes.
+Mestre: Possui controle total da sessão. Pode alterar qualquer MapToken, SessionMap e visualizar todos os CharacterAttributes.
 
 Jogador: Permissão de escrita apenas no seu SessionCharacter e em SessionNote privadas. Só recebe via WebSocket dados de tokens onde is_hidden = False ou possua entrada em TokenVisibility.
 
