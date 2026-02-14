@@ -158,6 +158,7 @@ SIMPLE_JWT = {
 }
 
 # CORS
+# Para desenvolvimento local
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -165,4 +166,27 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080",
 ]
 
+# Para Lovable e outras plataformas de deploy
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.lovableproject\.com$",
+    r"^https://.*\.lovable\.app$",
+    r"^https://.*\.vercel\.app$",
+]
+
+# Alternativa: permitir todos os domínios (apenas para desenvolvimento)
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
+
+# Headers adicionais que o frontend pode enviar
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
