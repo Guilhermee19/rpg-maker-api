@@ -10,7 +10,6 @@ class CharacterSerializer(serializers.ModelSerializer):
         model = Character
         fields = [
             "id",
-            "name",
             "player_name", 
             "system_key",
             "xp_total",
