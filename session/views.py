@@ -2,9 +2,10 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import models
 
 from .models import Session, SessionInvite, SessionCharacter
-from .serializers import SessionSerializer
+from .serializers import SessionSerializer, SessionDetailSerializer
 from .services import generate_invite_code, add_user_to_session
 
 
@@ -16,6 +17,25 @@ class SessionViewSet(viewsets.ModelViewSet):
         return Session.objects.filter(
             members__user=self.request.user
         ).distinct()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return SessionDetailSerializer
+        return SessionSerializer
+
+    def get_object(self):
+        """Override para fazer prefetch das relações no retrieve"""
+        obj = super().get_object()
+        if self.action == 'retrieve':
+            # Fazendo prefetch de todas as relações para otimizar as queries
+            obj = Session.objects.prefetch_related(
+                'members__user',
+                'session_characters__character',
+                'session_characters__user', 
+                'invites',
+                'maps'
+            ).get(pk=obj.pk)
+        return obj
 
     def perform_create(self, serializer):
         session = serializer.save(master=self.request.user)
