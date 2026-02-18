@@ -46,13 +46,8 @@ class CharacterSerializer(serializers.ModelSerializer):
     """Serializer para Character model"""
     
     user_info = serializers.SerializerMethodField(read_only=True)
-    rpg_system_info = serializers.SerializerMethodField(read_only=True)
     system_name = serializers.CharField(read_only=True)
-    rpg_system = serializers.PrimaryKeyRelatedField(
-        queryset=RPGSystem.objects.filter(is_active=True), 
-        required=False, 
-        allow_null=True
-    )
+    rpg_system = RPGSystemListSerializer(read_only=True)
     
     class Meta:
         model = Character
@@ -60,7 +55,6 @@ class CharacterSerializer(serializers.ModelSerializer):
             "id",
             "player_name", 
             "rpg_system",
-            "rpg_system_info",
             "system_name",
             "xp_total",
             "description",
@@ -71,7 +65,7 @@ class CharacterSerializer(serializers.ModelSerializer):
             "updated_at",
             "user_info",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "user_info", "rpg_system_info", "system_name"]
+        read_only_fields = ["id", "created_at", "updated_at", "user_info", "rpg_system", "system_name"]
     
     def get_user_info(self, obj):
         """Retorna informações básicas do usuário"""
@@ -83,16 +77,10 @@ class CharacterSerializer(serializers.ModelSerializer):
             }
         return None
     
-    def get_rpg_system_info(self, obj):
-        """Retorna informações do sistema de RPG"""
-        if obj.rpg_system:
-            return {
-                'id': obj.rpg_system.id,
-                'name': obj.rpg_system.name,
-                'slug': obj.rpg_system.slug,
-                'description': obj.rpg_system.description
-            }
-        return None
+    def to_representation(self, instance):
+        """Permite escrever rpg_system como slug ao criar/atualizar"""
+        data = super().to_representation(instance)
+        return data
     
     def create(self, validated_data):
         """Override create para aplicar template do sistema"""

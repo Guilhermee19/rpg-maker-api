@@ -21,13 +21,13 @@ class RPGSystemAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'is_active', 'is_default', 'character_count', 'created_at']
     list_filter = ['is_active', 'is_default', 'created_at']
     search_fields = ['name', 'slug', 'description']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    readonly_fields = ['slug', 'created_at', 'updated_at']
     list_editable = ['is_active', 'is_default']
     prepopulated_fields = {'slug': ('name',)}
     
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('id', 'name', 'slug', 'description')
+            'fields': ('name', 'slug', 'description')
         }),
         ('Template da Ficha', {
             'fields': ('base_sheet_data',),
@@ -55,8 +55,9 @@ class RPGSystemAdmin(admin.ModelAdmin):
     def duplicate_system(self, request, queryset):
         """Ação para duplicar sistemas selecionados"""
         for system in queryset:
-            system.id = None
-            system.name = f"{system.name} (Cópia)"
+            original_name = system.name
+            system.pk = None
+            system.name = f"{original_name} (Cópia)"
             system.slug = f"{system.slug}-copy"
             system.is_default = False
             system.save()
@@ -79,13 +80,13 @@ class CharacterAdmin(admin.ModelAdmin):
     list_display = ['player_name', 'user', 'rpg_system_name', 'xp_total', 'is_active', 'created_at']
     list_filter = ['rpg_system', 'is_active', 'created_at', 'updated_at']
     search_fields = ['player_name', 'user__username', 'user__email', 'rpg_system__name']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at']
     list_editable = ['is_active']
     list_per_page = 25
     
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('id', 'user', 'player_name', 'rpg_system')
+            'fields': ('user', 'player_name', 'rpg_system')
         }),
         ('Progressão', {
             'fields': ('xp_total', 'avatar_url', 'description')

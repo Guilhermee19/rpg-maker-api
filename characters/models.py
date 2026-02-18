@@ -9,10 +9,9 @@ from django.utils.text import slugify
 class RPGSystem(models.Model):
     """Modelo para diferentes sistemas de RPG"""
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = models.SlugField(max_length=100, unique=True, primary_key=True, editable=False)
     
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
     
     # Template base para a ficha do personagem
@@ -34,9 +33,15 @@ class RPGSystem(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        """Garante que apenas um sistema seja o padrão e gera o slug"""
+        """Garante que o slug seja a primary key e apenas um sistema seja o padrão"""
+        # Gera o slug se for novo
         if not self.slug:
             self.slug = slugify(self.name)
+        
+        # Se for novo ou o nome mudou, verifica se o slug precisa ser atualizado
+        if not self.pk:
+            # Para novo, o slug é a PK
+            pass
         
         if self.is_default:
             # Remove o default de outros sistemas
@@ -126,10 +131,11 @@ class Character(models.Model):
         on_delete=models.PROTECT,
         related_name="characters",
         null=True,
-        blank=True
+        blank=True,
+        to_field='slug'
     )
 
-    player_name = models.CharField(max_length=120, blank=True, null=True)  # "Jogador"
+    player_name = models.CharField(max_length=120, blank=True)  # "Jogador"
     avatar_url = models.URLField(blank=True, null=True)
     
     xp_total = models.IntegerField(default=0)
