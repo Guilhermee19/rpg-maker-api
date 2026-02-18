@@ -86,10 +86,10 @@ class SessionInviteInline(admin.StackedInline):
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'master', 'system_key', 'status', 
+        'name', 'master', 'status', 
         'member_count', 'character_count', 'created_at'
     ]
-    list_filter = ['status', 'system_key', 'created_at', 'updated_at']
+    list_filter = ['status', 'created_at', 'updated_at']
     search_fields = ['name', 'description', 'master__username', 'master__email']
     readonly_fields = ['id', 'created_at', 'updated_at']
     autocomplete_fields = ['master']
@@ -100,7 +100,7 @@ class SessionAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('id', 'name', 'description', 'master', 'system_key')
+            'fields': ('id', 'name', 'description', 'master')
         }),
         ('Status', {
             'fields': ('status', 'created_at', 'updated_at')
@@ -126,7 +126,7 @@ class SessionAdmin(admin.ModelAdmin):
 @admin.register(SessionMember)
 class SessionMemberAdmin(admin.ModelAdmin):
     list_display = ['user', 'session', 'role', 'joined_at']
-    list_filter = ['role', 'joined_at', 'session__status', 'session__system_key']
+    list_filter = ['role', 'joined_at', 'session__status']
     search_fields = ['user__username', 'user__email', 'session__name']
     readonly_fields = ['id', 'joined_at']
     autocomplete_fields = ['user', 'session']
@@ -196,7 +196,7 @@ class SessionInviteAdmin(admin.ModelAdmin):
 @admin.register(SessionCharacter)
 class SessionCharacterAdmin(admin.ModelAdmin):
     list_display = ['character_name', 'user', 'session', 'character_system', 'joined_at']
-    list_filter = ['joined_at', 'session__status', 'character__system_key']
+    list_filter = ['joined_at', 'session__status', 'character__rpg_system']
     search_fields = [
         'character__player_name', 'user__username', 'user__email', 
         'session__name'
@@ -221,7 +221,7 @@ class SessionCharacterAdmin(admin.ModelAdmin):
     character_name.short_description = 'Personagem'
     
     def character_system(self, obj):
-        return obj.character.system_key if obj.character else 'N/A'
+        return obj.character.system_name if obj.character else 'N/A'
     character_system.short_description = 'Sistema'
     
     def get_queryset(self, request):

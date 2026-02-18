@@ -1,8 +1,14 @@
 from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from .models import Character
-from .serializers import CharacterSerializer
+from .models import Character, RPGSystem
+from .serializers import (
+    CharacterSerializer, 
+    CharacterCreateSerializer,
+    RPGSystemSerializer, 
+    RPGSystemListSerializer
+)
 
 class IsOwner(permissions.BasePermission):
     """Permission para garantir que usuários só acessem seus próprios personagens"""
@@ -13,12 +19,66 @@ class IsOwner(permissions.BasePermission):
 
 @extend_schema_view(
     list=extend_schema(
+        summary="Lista sistemas de RPG disponíveis",
+        description="Retorna todos os sistemas de RPG ativos disponíveis para criação de personagens"
+    ),
+    retrieve=extend_schema(
+        summary="Detalhes do sistema de RPG",
+        description="Retorna detalhes completos de um sistema de RPG específico"
+    ),
+)
+class RPGSystemViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet para consulta de sistemas de RPG"""
+    
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Retorna apenas sistemas ativos"""
+        return RPGSystem.objects.filter(is_active=True).order_by('name')
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RPGSystemListSerializer
+        return RPGSystemSerializer
+    
+    @extend_schema(
+        summary="Obter sistema padrão",
+        description="Retorna o sistema de RPG marcado como padrão"
+    )
+    @action(detail=False, methods=['get'])
+    def default(self, request):
+        """Retorna o sistema padrão"""
+        default_system = RPGSystem.get_default_system()
+        if default_system:
+            serializer = self.get_serializer(default_system)
+            return Response(serializer.data)
+        return Response(
+            {'error': 'Nenhum sistema padrão configurado'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    @extend_schema(
+        summary="Template base do sistema",
+        description="Retorna o template base da ficha de personagem para um sistema específico"
+    )
+    @action(detail=True, methods=['get'])
+    def template(self, request, pk=None):
+        """Retorna o template base da ficha para o sistema"""
+        system = self.get_object()
+        return Response({
+            'system': system.name,
+            'base_sheet_data': system.base_sheet_data
+        })
+
+
+@extend_schema_view(
+    list=extend_schema(
         summary="Lista personagens do usuário",
         description="Retorna todos os personagens do usuário autenticado"
     ),
     create=extend_schema(
         summary="Criar novo personagem", 
-        description="Cria um novo personagem para o usuário autenticado"
+        description="Cria um novo personagem para o usuário autenticado usando um sistema de RPG"
     ),
     retrieve=extend_schema(
         summary="Detalhes do personagem",
@@ -40,13 +100,77 @@ class IsOwner(permissions.BasePermission):
 class CharacterViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciamento completo de personagens"""
     
-    serializer_class = CharacterSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         """Retorna apenas personagens do usuário autenticado"""
-        return Character.objects.filter(user=self.request.user).order_by('-created_at')
+        return Character.objects.filter(user=self.request.user).select_related('rpg_system').order_by('-created_at')
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CharacterCreateSerializer
+        return CharacterSerializer
 
     def perform_create(self, serializer):
         """Associa o personagem ao usuário autenticado"""
         serializer.save(user=self.request.user)
+    
+    @extend_schema(
+        summary="Resetar ficha para template do sistema",
+        description="Reseta a ficha do personagem para o template base do sistema de RPG"
+    )
+    @action(detail=True, methods=['post'])
+    def reset_sheet(self, request, pk=None):
+        """Reseta a ficha do personagem para o template do sistema"""
+        character = self.get_object()
+        
+        if character.rpg_system and character.rpg_system.base_sheet_data:
+            character.sheet_data = character.rpg_system.base_sheet_data
+            character.save()
+            
+            serializer = self.get_serializer(character)
+            return Response({
+                'success': True,
+                'message': f'Ficha resetada para o template do sistema {character.rpg_system.name}',
+                'character': serializer.data
+            })
+        
+        return Response(
+            {'error': 'Personagem não possui sistema definido ou sistema sem template'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    @extend_schema(
+        summary="Trocar sistema do personagem",
+        description="Altera o sistema de RPG do personagem e opcionalmente aplica o novo template"
+    )
+    @action(detail=True, methods=['post'])
+    def change_system(self, request, pk=None):
+        """Troca o sistema de RPG do personagem"""
+        character = self.get_object()
+        system_id = request.data.get('rpg_system_id')
+        apply_template = request.data.get('apply_template', False)
+        
+        try:
+            new_system = RPGSystem.objects.get(id=system_id, is_active=True)
+        except RPGSystem.DoesNotExist:
+            return Response(
+                {'error': 'Sistema de RPG não encontrado ou não ativo'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        character.rpg_system = new_system
+        
+        # Aplica o template se solicitado
+        if apply_template and new_system.base_sheet_data:
+            character.sheet_data = new_system.base_sheet_data
+        
+        character.save()
+        
+        serializer = self.get_serializer(character)
+        return Response({
+            'success': True,
+            'message': f'Sistema alterado para {new_system.name}',
+            'template_applied': apply_template,
+            'character': serializer.data
+        })

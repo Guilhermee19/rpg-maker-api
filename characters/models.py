@@ -3,22 +3,113 @@ import json
 import os
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
+
+
+class RPGSystem(models.Model):
+    """Modelo para diferentes sistemas de RPG"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    
+    # Template base para a ficha do personagem
+    base_sheet_data = models.JSONField(default=dict)
+    
+    # Configurações do sistema
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Sistema de RPG"
+        verbose_name_plural = "Sistemas de RPG"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        """Garante que apenas um sistema seja o padrão e gera o slug"""
+        if not self.slug:
+            self.slug = slugify(self.name)
+        
+        if self.is_default:
+            # Remove o default de outros sistemas
+            RPGSystem.objects.exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_default_system(cls):
+        """Retorna o sistema padrão"""
+        try:
+            return cls.objects.filter(is_default=True, is_active=True).first()
+        except cls.DoesNotExist:
+            return None
+    
+    @classmethod
+    def get_default_sheet_data(cls, system_slug=None):
+        """Retorna os dados base da ficha para um sistema específico ou o padrão"""
+        if system_slug:
+            try:
+                system = cls.objects.get(slug=system_slug, is_active=True)
+                return system.base_sheet_data
+            except cls.DoesNotExist:
+                pass
+        
+        # Fallback para sistema padrão
+        default_system = cls.get_default_system()
+        if default_system:
+            return default_system.base_sheet_data
+        
+        # Fallback final para dados básicos
+        return {
+            "basic_info": {
+                "level": 1, 
+                "class": "", 
+                "race": ""
+            },
+            "attributes": {
+                "strength": 10,
+                "dexterity": 10, 
+                "constitution": 10,
+                "intelligence": 10,
+                "wisdom": 10,
+                "charisma": 10
+            },
+            "derived_stats": {
+                "hit_points": {
+                    "max": 10, 
+                    "current": 10
+                },
+                "armor_class": 10
+            },
+            "notes": {
+                "backstory": "", 
+                "appearance": ""
+            }
+        }
 
 
 def get_default_sheet_data():
-    """Retorna o template padrão da ficha de personagem"""
+    """Retorna o template padrão da ficha de personagem baseado no sistema selecionado"""
+    # Tenta usar o sistema padrão primeiro
+    sheet_data = RPGSystem.get_default_sheet_data()
+    if sheet_data:
+        return sheet_data
+    
+    # Fallback para arquivo template (compatibilidade com versão anterior)
     template_path = os.path.join(settings.BASE_DIR, 'character_sheet_template.json')
     try:
         with open(template_path, 'r', encoding='utf-8') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Fallback básico caso o arquivo não exista
-        return {
-            "basic_info": {"level": 1, "class": "", "race": ""},
-            "attributes": {"strength": 10, "dexterity": 10, "constitution": 10, "intelligence": 10, "wisdom": 10, "charisma": 10},
-            "derived_stats": {"hit_points": {"max": 10, "current": 10}, "armor_class": 10},
-            "notes": {"backstory": "", "appearance": ""}
-        }
+        # Fallback básico caso nada funcione
+        return RPGSystem.get_default_sheet_data()
 
 class Character(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -28,10 +119,19 @@ class Character(models.Model):
         on_delete=models.CASCADE,
         related_name="characters"
     )
+    
+    # Sistema de RPG utilizado
+    rpg_system = models.ForeignKey(
+        RPGSystem,
+        on_delete=models.PROTECT,
+        related_name="characters",
+        null=True,
+        blank=True
+    )
 
     player_name = models.CharField(max_length=120, blank=True, null=True)  # "Jogador"
     avatar_url = models.URLField(blank=True, null=True)
-    system_key = models.CharField(max_length=30, default="EPICORPG")
+    
     xp_total = models.IntegerField(default=0)
     description = models.TextField(blank=True, null=True)
 
@@ -46,6 +146,27 @@ class Character(models.Model):
         verbose_name = "Personagem"
         verbose_name_plural = "Personagens"
     
+    def save(self, *args, **kwargs):
+        """Override save to set default RPG system"""
+        # Se não tem sistema definido, usa o padrão
+        if not self.rpg_system:
+            self.rpg_system = RPGSystem.get_default_system()
+            
+        # Se é um novo character, usa o template do sistema
+        if not self.pk and not self.sheet_data:
+            if self.rpg_system and self.rpg_system.base_sheet_data:
+                self.sheet_data = self.rpg_system.base_sheet_data
+            else:
+                self.sheet_data = get_default_sheet_data()
+        
+        super().save(*args, **kwargs)
+    
+    @property
+    def system_name(self):
+        """Retorna o nome do sistema de RPG"""
+        return self.rpg_system.name if self.rpg_system else "Sistema não definido"
+    
     def __str__(self):
         player_info = f" ({self.player_name})" if self.player_name else ""
-        return f"{self.player_name}{player_info} - {self.system_key}"
+        system_name = self.rpg_system.name if self.rpg_system else "Sem sistema"
+        return f"{self.player_name or 'Personagem'}{player_info} - {system_name}"

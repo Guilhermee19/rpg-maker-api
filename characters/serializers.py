@@ -1,17 +1,67 @@
 from rest_framework import serializers
-from .models import Character
+from .models import Character, RPGSystem
+
+class RPGSystemSerializer(serializers.ModelSerializer):
+    """Serializer para RPGSystem model"""
+    
+    character_count = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = RPGSystem
+        fields = [
+            "id",
+            "name", 
+            "slug",
+            "description",
+            "base_sheet_data",
+            "is_active",
+            "is_default",
+            "character_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "character_count"]
+    
+    def get_character_count(self, obj):
+        """Retorna o número de personagens que usam este sistema"""
+        return obj.characters.count()
+
+
+class RPGSystemListSerializer(serializers.ModelSerializer):
+    """Serializer simplificado para listagem de sistemas"""
+    
+    class Meta:
+        model = RPGSystem
+        fields = [
+            "id",
+            "name", 
+            "slug",
+            "description",
+            "is_active",
+            "is_default",
+        ]
+
 
 class CharacterSerializer(serializers.ModelSerializer):
     """Serializer para Character model"""
     
     user_info = serializers.SerializerMethodField(read_only=True)
+    rpg_system_info = serializers.SerializerMethodField(read_only=True)
+    system_name = serializers.CharField(source='system_name', read_only=True)
+    rpg_system = serializers.PrimaryKeyRelatedField(
+        queryset=RPGSystem.objects.filter(is_active=True), 
+        required=False, 
+        allow_null=True
+    )
     
     class Meta:
         model = Character
         fields = [
             "id",
             "player_name", 
-            "system_key",
+            "rpg_system",
+            "rpg_system_info",
+            "system_name",
             "xp_total",
             "description",
             "avatar_url",
@@ -21,7 +71,7 @@ class CharacterSerializer(serializers.ModelSerializer):
             "updated_at",
             "user_info",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "user_info"]
+        read_only_fields = ["id", "created_at", "updated_at", "user_info", "rpg_system_info", "system_name"]
     
     def get_user_info(self, obj):
         """Retorna informações básicas do usuário"""
@@ -32,3 +82,63 @@ class CharacterSerializer(serializers.ModelSerializer):
                 'email': obj.user.email
             }
         return None
+    
+    def get_rpg_system_info(self, obj):
+        """Retorna informações do sistema de RPG"""
+        if obj.rpg_system:
+            return {
+                'id': obj.rpg_system.id,
+                'name': obj.rpg_system.name,
+                'slug': obj.rpg_system.slug,
+                'description': obj.rpg_system.description
+            }
+        return None
+    
+    def create(self, validated_data):
+        """Override create para aplicar template do sistema"""
+        rpg_system = validated_data.get('rpg_system')
+        
+        # Se não foi fornecido um sistema, usa o padrão
+        if not rpg_system:
+            rpg_system = RPGSystem.get_default_system()
+            validated_data['rpg_system'] = rpg_system
+        
+        # Se não foi fornecido sheet_data e tem sistema, usa o template do sistema
+        if not validated_data.get('sheet_data') and rpg_system:
+            validated_data['sheet_data'] = rpg_system.base_sheet_data
+        
+        return super().create(validated_data)
+
+
+class CharacterCreateSerializer(serializers.ModelSerializer):
+    """Serializer específico para criação de personagens"""
+    
+    rpg_system = serializers.PrimaryKeyRelatedField(
+        queryset=RPGSystem.objects.filter(is_active=True), 
+        required=False, 
+        allow_null=True
+    )
+    
+    class Meta:
+        model = Character
+        fields = [
+            "player_name", 
+            "rpg_system",
+            "description",
+            "avatar_url",
+        ]
+    
+    def create(self, validated_data):
+        """Cria personagem com template base do sistema"""
+        rpg_system = validated_data.get('rpg_system')
+        
+        # Se não foi fornecido um sistema, usa o padrão
+        if not rpg_system:
+            rpg_system = RPGSystem.get_default_system()
+            validated_data['rpg_system'] = rpg_system
+        
+        # Aplica o template base do sistema
+        if rpg_system and rpg_system.base_sheet_data:
+            validated_data['sheet_data'] = rpg_system.base_sheet_data
+        
+        return super().create(validated_data)

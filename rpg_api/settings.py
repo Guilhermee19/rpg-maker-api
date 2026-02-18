@@ -171,9 +171,6 @@ SPECTACULAR_SETTINGS = {
         'persistAuthorization': True,
         'displayOperationId': False,
     },
-    'PREPROCESSING_HOOKS': [
-        'drf_spectacular.hooks.preprocess_exclude_path_format',
-    ],
 }
 
 # JWT Settings
