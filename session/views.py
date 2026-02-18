@@ -3,38 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db import models
-from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import Session, SessionInvite, SessionCharacter
 from .serializers import SessionSerializer, SessionDetailSerializer
 from .services import generate_invite_code, add_user_to_session
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="Listar sessões",
-        description="Lista todas as sessões em que o usuário participa"
-    ),
-    create=extend_schema(
-        summary="Criar sessão", 
-        description="Cria uma nova sessão de RPG (usuário automaticamente se torna o mestre)"
-    ),
-    retrieve=extend_schema(
-        summary="Detalhes da sessão",
-        description="Obtém detalhes completos de uma sessão (membros, personagens, convites e mapas)"
-    ),
-    update=extend_schema(
-        summary="Atualizar sessão",
-        description="Atualiza completamente uma sessão (apenas o mestre)"
-    ),
-    partial_update=extend_schema(
-        summary="Atualizar sessão parcialmente", 
-        description="Atualiza parcialmente uma sessão (apenas o mestre)"
-    ),
-    destroy=extend_schema(
-        summary="Deletar sessão",
-        description="Remove uma sessão permanentemente (apenas o mestre)"
-    )
-)
 class SessionViewSet(viewsets.ModelViewSet):
     serializer_class = SessionSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -68,10 +41,6 @@ class SessionViewSet(viewsets.ModelViewSet):
 
         add_user_to_session(session, self.request.user, role="MASTER")
 
-    @extend_schema(
-        summary="Criar convite",
-        description="Cria um código de convite para a sessão (apenas o mestre)"
-    )
     @action(detail=True, methods=["post"])
     def create_invite(self, request, pk=None):
         session = self.get_object()
@@ -87,10 +56,6 @@ class SessionViewSet(viewsets.ModelViewSet):
         return Response({"code": invite.code})
 
 
-@extend_schema(
-    summary="Entrar na sessão por código",
-    description="Permite que um usuário entre em uma sessão usando um código de convite"
-)
 class JoinSessionByCodeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -112,10 +77,6 @@ class JoinSessionByCodeView(APIView):
         return Response({"session_id": str(session.id)})
 
 
-@extend_schema(
-    summary="Selecionar personagem para sessão",
-    description="Define qual personagem o usuário irá usar na sessão"
-)
 class SelectCharacterView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

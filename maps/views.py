@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
-from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import SessionMap
 from .serializers import (
     SessionMapSerializer, 
@@ -13,32 +12,6 @@ from .serializers import (
 from .permissions import IsSessionMember, IsSessionGM
 from session.models import Session
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="Listar mapas",
-        description="Lista todos os mapas das sessões em que o usuário participa"
-    ),
-    create=extend_schema(
-        summary="Criar mapa",
-        description="Cria um novo mapa para uma sessão (apenas mestres)"
-    ),
-    retrieve=extend_schema(
-        summary="Detalhes do mapa",
-        description="Obtém detalhes completos de um mapa específico"
-    ),
-    update=extend_schema(
-        summary="Atualizar mapa",
-        description="Atualiza completamente um mapa (apenas o mestre da sessão)"
-    ),
-    partial_update=extend_schema(
-        summary="Atualizar mapa parcialmente",
-        description="Atualiza parcialmente um mapa (apenas o mestre da sessão)"
-    ),
-    destroy=extend_schema(
-        summary="Deletar mapa",
-        description="Remove um mapa da sessão (apenas o mestre da sessão)"
-    )
-)
 class SessionMapViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSessionMember]
     
@@ -91,10 +64,6 @@ class SessionMapViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Apenas o mestre pode remover mapas.")
         instance.delete()
     
-    @extend_schema(
-        summary="Ativar/Desativar mapa",
-        description="Alterna o status ativo/inativo de um mapa (apenas mestres)"
-    )
     @action(detail=True, methods=['post'])
     def toggle_active(self, request, pk=None):
         """Ativa/desativa um mapa"""
@@ -108,10 +77,6 @@ class SessionMapViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(map_obj)
         return Response(serializer.data)
     
-    @extend_schema(
-        summary="Mapas por sessão",
-        description="Lista todos os mapas de uma sessão específica"
-    )
     @action(detail=False, methods=['get'])
     def by_session(self, request):
         """Lista mapas de uma sessão específica"""

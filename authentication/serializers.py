@@ -4,7 +4,12 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from core.serializers import UserSerializer
+
+class UserResponseSerializer(serializers.ModelSerializer):
+    """Serializer básico para resposta de usuário"""
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 
 class EmailTokenObtainPairSerializer(serializers.Serializer):
@@ -30,8 +35,32 @@ class EmailTokenObtainPairSerializer(serializers.Serializer):
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': UserSerializer(user).data,
+            'user': UserResponseSerializer(user).data,
         }
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name']
+    
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Este email já está em uso.')
+        return value
+    
+    def validate(self, data):
+        if data['password'] != data['password_confirm']:
+            raise serializers.ValidationError('As senhas não coincidem.')
+        return data
+    
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        user = User.objects.create_user(**validated_data)
+        return user
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

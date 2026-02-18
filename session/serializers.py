@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Session, SessionMember, SessionInvite, SessionCharacter
-from characters.serializers import CharacterSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -21,12 +20,17 @@ class SessionMemberDetailSerializer(serializers.ModelSerializer):
 
 
 class SessionCharacterDetailSerializer(serializers.ModelSerializer):
-    character = CharacterSerializer(read_only=True)
+    character = serializers.SerializerMethodField()
     user = UserBasicSerializer(read_only=True)
     
     class Meta:
         model = SessionCharacter
         fields = ['id', 'user', 'character', 'joined_at']
+    
+    def get_character(self, obj):
+        """Lazy import para evitar circular dependency"""
+        from characters.serializers import CharacterSerializer
+        return CharacterSerializer(obj.character, context=self.context).data
 
 
 class SessionInviteDetailSerializer(serializers.ModelSerializer):
@@ -59,7 +63,7 @@ class SessionDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Session
-        fields = ['id', 'master', 'name', 'description', 'system_key', 'status', 
+        fields = ['id', 'master', 'name', 'description', 'status', 
                  'created_at', 'updated_at', 'members', 'session_characters', 
                  'invites', 'maps', 'total_members', 'total_characters', 'total_maps']
     
@@ -87,7 +91,7 @@ class SessionDetailSerializer(serializers.ModelSerializer):
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
-        fields = "__all__"
+        fields = ["id", "master", "name", "description", "status", "created_at", "updated_at"]
         read_only_fields = ("id", "master", "created_at", "updated_at")
 
 

@@ -1,7 +1,6 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Character, RPGSystem
 from .serializers import (
     CharacterSerializer, 
@@ -17,16 +16,6 @@ class IsOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="Lista sistemas de RPG disponíveis",
-        description="Retorna todos os sistemas de RPG ativos disponíveis para criação de personagens"
-    ),
-    retrieve=extend_schema(
-        summary="Detalhes do sistema de RPG",
-        description="Retorna detalhes completos de um sistema de RPG específico"
-    ),
-)
 class RPGSystemViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para consulta de sistemas de RPG"""
     
@@ -41,10 +30,6 @@ class RPGSystemViewSet(viewsets.ReadOnlyModelViewSet):
             return RPGSystemListSerializer
         return RPGSystemSerializer
     
-    @extend_schema(
-        summary="Obter sistema padrão",
-        description="Retorna o sistema de RPG marcado como padrão"
-    )
     @action(detail=False, methods=['get'])
     def default(self, request):
         """Retorna o sistema padrão"""
@@ -57,10 +42,6 @@ class RPGSystemViewSet(viewsets.ReadOnlyModelViewSet):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    @extend_schema(
-        summary="Template base do sistema",
-        description="Retorna o template base da ficha de personagem para um sistema específico"
-    )
     @action(detail=True, methods=['get'])
     def template(self, request, pk=None):
         """Retorna o template base da ficha para o sistema"""
@@ -71,32 +52,6 @@ class RPGSystemViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="Lista personagens do usuário",
-        description="Retorna todos os personagens do usuário autenticado"
-    ),
-    create=extend_schema(
-        summary="Criar novo personagem", 
-        description="Cria um novo personagem para o usuário autenticado usando um sistema de RPG"
-    ),
-    retrieve=extend_schema(
-        summary="Detalhes do personagem",
-        description="Retorna detalhes de um personagem específico"
-    ),
-    update=extend_schema(
-        summary="Atualizar personagem",
-        description="Atualiza completamente um personagem"
-    ),
-    partial_update=extend_schema(
-        summary="Atualizar personagem parcialmente", 
-        description="Atualiza campos específicos de um personagem"
-    ),
-    destroy=extend_schema(
-        summary="Excluir personagem",
-        description="Remove um personagem permanentemente"
-    ),
-)
 class CharacterViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciamento completo de personagens"""
     
@@ -115,10 +70,6 @@ class CharacterViewSet(viewsets.ModelViewSet):
         """Associa o personagem ao usuário autenticado"""
         serializer.save(user=self.request.user)
     
-    @extend_schema(
-        summary="Resetar ficha para template do sistema",
-        description="Reseta a ficha do personagem para o template base do sistema de RPG"
-    )
     @action(detail=True, methods=['post'])
     def reset_sheet(self, request, pk=None):
         """Reseta a ficha do personagem para o template do sistema"""
@@ -140,10 +91,6 @@ class CharacterViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    @extend_schema(
-        summary="Trocar sistema do personagem",
-        description="Altera o sistema de RPG do personagem e opcionalmente aplica o novo template"
-    )
     @action(detail=True, methods=['post'])
     def change_system(self, request, pk=None):
         """Troca o sistema de RPG do personagem"""

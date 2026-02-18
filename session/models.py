@@ -19,7 +19,7 @@ class Session(models.Model):
 
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
-    system_key = models.CharField(max_length=30, default="EPICORPG")
+    # system_key removido - agora os personagens usam RPGSystem
 
     status = models.CharField(
         max_length=20,

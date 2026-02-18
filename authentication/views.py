@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema
 from .serializers import EmailTokenObtainPairSerializer, UserRegisterSerializer
 
 
@@ -18,15 +17,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date_joined']
 
 
-@extend_schema(
-    summary="Registrar novo usuário",
-    description="Cria uma nova conta de usuário com email obrigatório",
-    tags=["Autenticação"]
-)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    """Registrar novo usuário com email obrigatório"""
     """Registrar novo usuário com email obrigatório"""
     serializer = UserRegisterSerializer(data=request.data)
     
@@ -49,11 +42,6 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(
-    summary="Login do usuário",
-    description="Autentica o usuário usando email e senha",
-    tags=["Autenticação"]
-)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
@@ -72,11 +60,6 @@ def login(request):
     )
 
 
-@extend_schema(
-    summary="Logout do usuário",
-    description="Faz logout do usuário e invalida o refresh token",
-    tags=["Autenticação"]
-)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
@@ -96,11 +79,6 @@ def logout(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(
-    summary="Obter perfil do usuário",
-    description="Retorna informações do usuário autenticado",
-    tags=["Usuário"]
-)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user(request):
@@ -111,11 +89,6 @@ def get_user(request):
     }, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    summary="Renovar token de acesso",
-    description="Renova o token de acesso usando o refresh token",
-    tags=["Autenticação"]
-)
 class CustomTokenRefreshView(TokenRefreshView):
     """Custom refresh token view"""
     pass

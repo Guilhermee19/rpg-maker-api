@@ -47,7 +47,7 @@ class CharacterSerializer(serializers.ModelSerializer):
     
     user_info = serializers.SerializerMethodField(read_only=True)
     rpg_system_info = serializers.SerializerMethodField(read_only=True)
-    system_name = serializers.CharField(source='system_name', read_only=True)
+    system_name = serializers.CharField(read_only=True)
     rpg_system = serializers.PrimaryKeyRelatedField(
         queryset=RPGSystem.objects.filter(is_active=True), 
         required=False, 
