@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Session, SessionMember, SessionInvite, SessionCharacter
 from characters.serializers import CharacterSerializer
-from maps.serializers import SessionMapSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -53,7 +52,7 @@ class SessionDetailSerializer(serializers.ModelSerializer):
     members = SessionMemberDetailSerializer(many=True, read_only=True)
     session_characters = SessionCharacterDetailSerializer(many=True, read_only=True)
     invites = SessionInviteDetailSerializer(many=True, read_only=True)
-    maps = SessionMapSerializer(many=True, read_only=True)
+    maps = serializers.SerializerMethodField()  # Mudança para SerializerMethodField
     total_members = serializers.SerializerMethodField()
     total_characters = serializers.SerializerMethodField()
     total_maps = serializers.SerializerMethodField()
@@ -63,6 +62,17 @@ class SessionDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'master', 'name', 'description', 'system_key', 'status', 
                  'created_at', 'updated_at', 'members', 'session_characters', 
                  'invites', 'maps', 'total_members', 'total_characters', 'total_maps']
+    
+    def get_maps(self, obj):
+        """Retorna mapas da sessão - import lazy para evitar circular"""
+        try:
+            # Import lazy do SessionMapSerializer
+            from maps.serializers import SessionMapSerializer
+            maps = obj.maps.all()
+            return SessionMapSerializer(maps, many=True, context=self.context).data
+        except ImportError:
+            # Fallback caso haja problemas de import
+            return []
     
     def get_total_members(self, obj):
         return obj.members.count()

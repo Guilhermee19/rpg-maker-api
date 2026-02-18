@@ -1,14 +1,29 @@
 from pathlib import Path
-from decouple import config
+import sys
+import os
+
+# Verifica se existe decouple instalado para usar variáveis de ambiente
+try:
+    from decouple import config
+    config_available = True
+except ImportError:
+    config_available = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
+if config_available:
+    SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
+else:
+    SECRET_KEY = 'django-insecure-local-development-key-only-change-in-production'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+if config_available:
+    DEBUG = config('DEBUG', default=True, cast=bool)
+else:
+    # Para desenvolvimento local
+    DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -46,8 +61,8 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,6 +124,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Para desenvolvimento local - permite que o Django sirva os arquivos estáticos
+STATICFILES_DIRS = [
+    # Adicione outros diretórios de arquivos estáticos se necessário
+]
+
+# Finders para arquivos estáticos
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Storage para arquivos estáticos
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
