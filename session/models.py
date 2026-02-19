@@ -1,6 +1,9 @@
 import uuid
+import string
+import secrets
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Session(models.Model):
@@ -78,7 +81,7 @@ class SessionInvite(models.Model):
         related_name="invites"
     )
 
-    code = models.CharField(max_length=20, unique=True)
+    code = models.CharField(max_length=20, unique=True, blank=True)
 
     max_uses = models.IntegerField(null=True, blank=True)
     uses_count = models.IntegerField(default=0)
@@ -94,6 +97,29 @@ class SessionInvite(models.Model):
     
     def __str__(self):
         return f"Convite {self.code} - {self.session.name}"
+    
+    def generate_code(self):
+        """Gera um código único contendo slug da sessão + caracteres aleatórios"""
+        # Cria um slug do nome da sessão (max 5 caracteres)
+        session_slug = slugify(self.session.name)[:5].upper()
+        
+        # Gera caracteres aleatórios seguros (8 caracteres)
+        random_chars = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+        
+        code = f"{session_slug}{random_chars}"
+        
+        # Garante unicidade
+        while SessionInvite.objects.filter(code=code).exists():
+            random_chars = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+            code = f"{session_slug}{random_chars}"
+        
+        return code
+    
+    def save(self, *args, **kwargs):
+        """Gera o código automaticamente se não existir"""
+        if not self.code:
+            self.code = self.generate_code()
+        super().save(*args, **kwargs)
     
     @property
     def is_valid(self):

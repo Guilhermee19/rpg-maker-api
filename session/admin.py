@@ -153,7 +153,7 @@ class SessionInviteAdmin(admin.ModelAdmin):
     ]
     list_filter = ['created_at', 'max_uses', 'session__status']
     search_fields = ['code', 'session__name']
-    readonly_fields = ['id', 'uses_count', 'created_at']
+    readonly_fields = ['id', 'code', 'uses_count', 'created_at']
     autocomplete_fields = ['session']
     
     fieldsets = (

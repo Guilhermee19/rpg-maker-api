@@ -48,9 +48,7 @@ class SessionMapViewSet(viewsets.ModelViewSet):
         return SessionMapSerializer
 
     def perform_create(self, serializer):
-        session = serializer.validated_data["session"]
-        if session.master != self.request.user:
-            raise PermissionDenied("Apenas o mestre pode criar mapas.")
+        # O serializer já validou a sessão e permissões
         serializer.save()
 
     def perform_update(self, serializer):

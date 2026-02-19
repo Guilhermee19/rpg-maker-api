@@ -4,7 +4,7 @@ from session.models import SessionMember
 class IsSessionMember(permissions.BasePermission):
     """
     Permission para verificar se o usuário é membro da sessão.
-    Para criação: verifica se o session_id nos dados da request está acessível
+    Para criação: deixa o serializer validar (mais específico)
     Para objetos: verifica se o usuário é membro da sessão do objeto
     """
     
@@ -13,22 +13,18 @@ class IsSessionMember(permissions.BasePermission):
         if view.action in ['list', 'by_session']:
             return True
         
-        # Para criação, verifica se o usuário pode acessar a sessão informada
+        # Para criação, deixa o serializer validar (mais detalhado)
         if view.action == 'create':
-            session_id = request.data.get("session")
-            if not session_id:
-                return False
-            return SessionMember.objects.filter(
-                session_id=session_id, 
-                user=request.user
-            ).exists()
+            return True
         
         # Para outras actions, será verificado no has_object_permission
         return True
 
     def has_object_permission(self, request, view, obj):
-        """Verifica se o usuário é membro da sessão do mapa"""
-        return obj.session.members.filter(user=request.user).exists()
+        """Verifica se o usuário é membro da sessão ou master"""
+        is_master = obj.session.master == request.user
+        is_member = obj.session.members.filter(user=request.user).exists()
+        return is_master or is_member
 
 
 class IsSessionGM(permissions.BasePermission):

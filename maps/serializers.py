@@ -47,15 +47,27 @@ class SessionMapCreateSerializer(serializers.ModelSerializer):
             "width",
             "height",
         ]
-    
+
     def validate_session(self, value):
-        """Valida se o usuário é o mestre da sessão"""
+        """Valida se a sessão existe e o usuário tem acesso"""
         user = self.context['request'].user
-        if value.master != user:
+        
+        try:
+            # Verifica se o usuário é master da sessão
+            if value.master == user:
+                return value
+                
+            # Verifica se o usuário é membro da sessão
+            if value.members.filter(user=user).exists():
+                return value
+                
             raise serializers.ValidationError(
-                "Apenas o mestre da sessão pode criar mapas."
+                "Você não tem permissão para criar mapas nesta sessão."
             )
-        return value
+        except:
+            raise serializers.ValidationError(
+                "Sessão não encontrada."
+            )
 
 class SessionMapDetailSerializer(serializers.ModelSerializer):
     """Serializer detalhado para visualização de mapas"""

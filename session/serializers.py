@@ -41,6 +41,7 @@ class SessionInviteDetailSerializer(serializers.ModelSerializer):
         model = SessionInvite
         fields = ['id', 'code', 'max_uses', 'uses_count', 'expires_at', 
                  'created_at', 'is_valid', 'invite_link']
+        read_only_fields = ['id', 'code', 'uses_count', 'created_at', 'is_valid']
     
     def get_invite_link(self, obj):
         # Você pode ajustar este link conforme sua estrutura de frontend
