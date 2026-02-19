@@ -9,9 +9,8 @@ class RPGSystemSerializer(serializers.ModelSerializer):
     class Meta:
         model = RPGSystem
         fields = [
-            "id",
-            "name", 
             "slug",
+            "name", 
             "description",
             "base_sheet_data",
             "is_active",
@@ -20,7 +19,7 @@ class RPGSystemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "character_count"]
+        read_only_fields = ["slug", "created_at", "updated_at", "character_count"]
     
     def get_character_count(self, obj):
         """Retorna o número de personagens que usam este sistema"""
@@ -33,9 +32,8 @@ class RPGSystemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = RPGSystem
         fields = [
-            "id",
-            "name", 
             "slug",
+            "name", 
             "description",
             "is_active",
             "is_default",
