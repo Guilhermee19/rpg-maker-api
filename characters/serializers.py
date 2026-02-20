@@ -127,4 +127,41 @@ class CharacterCreateSerializer(serializers.ModelSerializer):
         if rpg_system and rpg_system.base_sheet_data:
             validated_data['sheet_data'] = rpg_system.base_sheet_data
         
-        return super().create(validated_data)
+        character = super().create(validated_data)
+        return character
+    
+    def to_representation(self, instance):
+        """Retorna a representação completa do personagem criado"""
+        # Constrói manualmente para evitar problemas com async
+        rpg_system_data = None
+        if instance.rpg_system:
+            rpg_system_data = {
+                "slug": instance.rpg_system.slug,
+                "name": instance.rpg_system.name,
+                "description": instance.rpg_system.description,
+                "is_active": instance.rpg_system.is_active,
+                "is_default": instance.rpg_system.is_default,
+            }
+        
+        user_info = None
+        if instance.user:
+            user_info = {
+                'id': instance.user.id,
+                'username': instance.user.username,
+                'email': instance.user.email
+            }
+        
+        return {
+            "id": instance.id,
+            "player_name": instance.player_name,
+            "rpg_system": rpg_system_data,
+            "system_name": instance.rpg_system.name if instance.rpg_system else None,
+            "xp_total": instance.xp_total,
+            "description": instance.description,
+            "avatar_url": instance.avatar_url,
+            "sheet_data": instance.sheet_data,
+            "is_active": instance.is_active,
+            "created_at": instance.created_at,
+            "updated_at": instance.updated_at,
+            "user_info": user_info,
+        }

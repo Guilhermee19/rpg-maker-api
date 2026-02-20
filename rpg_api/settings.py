@@ -35,7 +35,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Application definition
 DJANGO_APPS = [
-    'daphne',
+    # 'daphne',  # Comentado temporariamente - use WSGI para desenvolvimento HTTP
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
