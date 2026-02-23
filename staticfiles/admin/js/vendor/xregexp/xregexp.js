@@ -4257,7 +4257,7 @@ fixed.match = function(regex) {
  * provides named backreferences to replacement functions as `arguments[0].name`. Also fixes browser
  * bugs in replacement text syntax when performing a replacement using a nonregex search value, and
  * the value of a replacement regex's `lastIndex` property during replacement iterations and upon
- * completion. Calling `XRegExp.install('natives')` uses this to override the native method. Note
+ * completion. Calling `XRegExp.install('natives')` uses this to override the native method. SessionNote
  * that this doesn't support SpiderMonkey's proprietary third (`flags`) argument. Use via
  * `XRegExp.replace` without overriding natives.
  *

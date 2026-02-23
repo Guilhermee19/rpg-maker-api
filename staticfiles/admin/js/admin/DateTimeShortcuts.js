@@ -75,16 +75,16 @@
             let message;
             if (timezoneOffset > 0) {
                 message = ngettext(
-                    'Note: You are %s hour ahead of server time.',
-                    'Note: You are %s hours ahead of server time.',
+                    'SessionNote: You are %s hour ahead of server time.',
+                    'SessionNote: You are %s hours ahead of server time.',
                     timezoneOffset
                 );
             }
             else {
                 timezoneOffset *= -1;
                 message = ngettext(
-                    'Note: You are %s hour behind server time.',
-                    'Note: You are %s hours behind server time.',
+                    'SessionNote: You are %s hour behind server time.',
+                    'SessionNote: You are %s hours behind server time.',
                     timezoneOffset
                 );
             }

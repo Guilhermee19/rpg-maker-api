@@ -1179,7 +1179,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// We include `*` in the test to detect buggy implementations that are
 	// _selectively_ forgiving (specifically when the list includes at least
 	// one valid selector).
-	// Note that we treat complete lack of support for `:has()` as if it were
+	// SessionNote that we treat complete lack of support for `:has()` as if it were
 	// spec-compliant support, which is fine because use of `:has()` in such
 	// environments will fail in the qSA path and fall back to jQuery traversal
 	// anyway.
@@ -10917,7 +10917,7 @@ jQuery.trim = function( text ) {
 // file name. Do this after creating the global so that if an AMD module wants
 // to call noConflict to hide this version of jQuery, it will work.
 
-// Note that for maximum portability, libraries that are not jQuery should
+// SessionNote that for maximum portability, libraries that are not jQuery should
 // declare themselves as anonymous modules, and avoid setting a global if an
 // AMD loader is present. jQuery is a special case. For more information, see
 // https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon

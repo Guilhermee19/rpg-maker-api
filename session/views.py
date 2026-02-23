@@ -1,11 +1,26 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import models
 
-from .models import Session, SessionInvite, SessionCharacter
-from .serializers import SessionSerializer, SessionDetailSerializer
+from .models import Session, SessionInvite, SessionCharacter, SessionNote
+from .serializers import SessionSerializer, SessionDetailSerializer, NoteSerializer
+class NoteViewSet(viewsets.ModelViewSet):
+    serializer_class = NoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering = ['-created_at']
+    search_fields = ['title', 'content']
+
+    def get_queryset(self):
+        # Usuário só vê suas próprias anotações nas sessões que participa
+        return SessionNote.objects.filter(
+            session__members__user=self.request.user,
+            user=self.request.user
+        ).distinct()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 from .services import add_user_to_session
 
 class SessionViewSet(viewsets.ModelViewSet):

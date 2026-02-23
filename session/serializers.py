@@ -1,4 +1,8 @@
 from rest_framework import serializers
+from .models import Session, SessionMember, SessionInvite, SessionCharacter, SessionNote
+
+
+from rest_framework import serializers
 from .models import Session, SessionMember, SessionInvite, SessionCharacter
 from django.contrib.auth import get_user_model
 
@@ -113,3 +117,18 @@ class SessionCharacterSerializer(serializers.ModelSerializer):
     class Meta:
         model = SessionCharacter
         fields = "__all__"
+
+
+# Serializer para SessionNote
+class NoteSerializer(serializers.ModelSerializer):
+    user = UserBasicSerializer(read_only=True)
+    # user = serializers.IntegerField(write_only=True)  # O usuário será definido no viewset
+
+    session = serializers.PrimaryKeyRelatedField(queryset=Session.objects.all())
+
+    class Meta:
+        model = SessionNote
+        fields = [
+            'id', 'session', 'user', 'title', 'content', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ('id', 'user', 'created_at', 'updated_at')

@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Session, SessionMember, SessionInvite, SessionCharacter
+from .models import Session, SessionMember, SessionInvite, SessionCharacter, SessionNote
 from core.models import UserProfile
 
 
@@ -236,3 +236,23 @@ admin.site.index_title = 'Painel Administrativo'
 # Personalizar o modelo User para aparecer como seção própria  
 User._meta.verbose_name = 'Usuário'
 User._meta.verbose_name_plural = 'Usuários'
+
+@admin.register(SessionNote)
+class SessionNoteAdmin(admin.ModelAdmin):
+    list_display = ['title', 'session', 'user', 'created_at', 'updated_at']
+    list_filter = ['created_at', 'updated_at', 'session__status']
+    search_fields = ['title', 'content', 'session__name', 'user__username']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+    autocomplete_fields = ['session', 'user']
+    
+    fieldsets = (
+        ('Nota da Sessão', {
+            'fields': ('id', 'session', 'user', 'title', 'content')
+        }),
+        ('Datas', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('session', 'user')
