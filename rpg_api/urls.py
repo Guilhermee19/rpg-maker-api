@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/core/', include('core.urls')),           # Users, Characters (ViewSets)  
     path('api/v1/session/', include('session.urls')),     # Sessions, Invites (ViewSets)
     path('api/v1/maps/', include('maps.urls')),           # Maps, Layers, Objects, Tokens
+    path('api/v1/npc/', include('npc.urls')),            # NPCs
 ]
 
 # Static and Media files - Para desenvolvimento
