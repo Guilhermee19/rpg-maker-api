@@ -1,7 +1,11 @@
-from rest_framework import routers
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import NPCViewSet
 
-router = routers.DefaultRouter()
+router = DefaultRouter()
 router.register(r'npcs', NPCViewSet, basename='npc')
 
-urlpatterns = router.urls
+urlpatterns = [
+	path('', include(router.urls)),
+]
