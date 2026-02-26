@@ -64,13 +64,15 @@ class SessionDetailSerializer(serializers.ModelSerializer):
     maps = serializers.SerializerMethodField()  # Mudança para SerializerMethodField
     total_members = serializers.SerializerMethodField()
     total_characters = serializers.SerializerMethodField()
+    items = serializers.SerializerMethodField()
+    total_items = serializers.SerializerMethodField()
     total_maps = serializers.SerializerMethodField()
     
     class Meta:
         model = Session
         fields = ['id', 'master', 'name', 'description', 'banner', 'status', 
-                 'created_at', 'updated_at', 'members', 'session_characters', 
-                 'invites', 'maps', 'total_members', 'total_characters', 'total_maps']
+             'created_at', 'updated_at', 'members', 'session_characters', 
+             'invites', 'maps', 'items', 'total_members', 'total_characters', 'total_maps', 'total_items']
     
     def get_maps(self, obj):
         """Retorna mapas da sessão - import lazy para evitar circular"""
@@ -91,6 +93,17 @@ class SessionDetailSerializer(serializers.ModelSerializer):
     
     def get_total_maps(self, obj):
         return obj.maps.count()
+    
+    def get_items(self, obj):
+        try:
+            from items.serializers import ItemSerializer
+            items = obj.items.all()
+            return ItemSerializer(items, many=True, context=self.context).data
+        except ImportError:
+            return []
+
+    def get_total_items(self, obj):
+        return obj.items.count()
 
 
 class SessionSerializer(serializers.ModelSerializer):

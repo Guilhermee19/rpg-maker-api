@@ -53,7 +53,8 @@ class SessionViewSet(viewsets.ModelViewSet):
                 'session_characters__character',
                 'session_characters__user',
                 'invites',
-                'maps'
+                    'maps',
+                    'items'
             ).get(pk=obj.pk)
         return obj
 
