@@ -86,11 +86,11 @@ class SessionInviteInline(admin.StackedInline):
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'master', 'status', 
+        'name', 'master', 'status', 'banner',
         'member_count', 'character_count', 'created_at'
     ]
     list_filter = ['status', 'created_at', 'updated_at']
-    search_fields = ['name', 'description', 'master__username', 'master__email']
+    search_fields = ['name', 'description', 'banner', 'master__username', 'master__email']
     readonly_fields = ['id', 'created_at', 'updated_at']
     autocomplete_fields = ['master']
     list_editable = ['status']
@@ -100,7 +100,7 @@ class SessionAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('id', 'name', 'description', 'master')
+                'fields': ('id', 'name', 'description', 'banner', 'master')
         }),
         ('Status', {
             'fields': ('status', 'created_at', 'updated_at')

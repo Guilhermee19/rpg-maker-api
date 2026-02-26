@@ -68,7 +68,7 @@ class SessionDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Session
-        fields = ['id', 'master', 'name', 'description', 'status', 
+        fields = ['id', 'master', 'name', 'description', 'banner', 'status', 
                  'created_at', 'updated_at', 'members', 'session_characters', 
                  'invites', 'maps', 'total_members', 'total_characters', 'total_maps']
     
@@ -96,7 +96,7 @@ class SessionDetailSerializer(serializers.ModelSerializer):
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
-        fields = ["id", "master", "name", "description", "status", "created_at", "updated_at"]
+        fields = ["id", "master", "name", "description", "banner", "status", "created_at", "updated_at"]
         read_only_fields = ("id", "master", "created_at", "updated_at")
 
 

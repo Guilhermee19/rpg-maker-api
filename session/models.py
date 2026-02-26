@@ -33,6 +33,8 @@ class Session(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    banner = models.URLField(blank=True, null=True)  # depois você troca por storage/file
+
     class Meta:
         verbose_name = "Sessão"
         verbose_name_plural = "Sessões"
@@ -106,6 +108,7 @@ class SessionInvite(models.Model):
         on_delete=models.CASCADE,
         related_name="invites"
     )
+    
 
     code = models.CharField(max_length=20, unique=True, blank=True)
 
