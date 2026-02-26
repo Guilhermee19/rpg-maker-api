@@ -12,6 +12,7 @@ from .serializers import (
 from .permissions import IsSessionMember, IsSessionGM
 from session.models import Session
 
+
 class SessionMapViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSessionMember]
     
@@ -48,7 +49,6 @@ class SessionMapViewSet(viewsets.ModelViewSet):
         return SessionMapSerializer
 
     def perform_create(self, serializer):
-        # O serializer já validou a sessão e permissões
         serializer.save()
 
     def perform_update(self, serializer):
@@ -61,7 +61,12 @@ class SessionMapViewSet(viewsets.ModelViewSet):
         if instance.session.master != self.request.user:
             raise PermissionDenied("Apenas o mestre pode remover mapas.")
         instance.delete()
-    
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Apagado com sucesso"}, status=200)
+
     @action(detail=True, methods=['post'])
     def toggle_active(self, request, pk=None):
         """Ativa/desativa um mapa"""

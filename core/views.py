@@ -15,7 +15,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Retorna apenas o usuário autenticado"""
         return User.objects.filter(id=self.request.user.id)
-    
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Apagado com sucesso"}, status=200)
+
     @action(detail=False, methods=['get', 'put', 'patch'])
     def me(self, request):
         """Endpoint para gerenciar perfil do usuário atual"""

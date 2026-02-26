@@ -10,6 +10,7 @@ from .serializers import (
     RPGSystemListSerializer
 )
 
+
 class IsOwner(permissions.BasePermission):
     """Permission para garantir que usuários só acessem seus próprios personagens"""
     
@@ -70,7 +71,12 @@ class CharacterViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Associa o personagem ao usuário autenticado"""
         serializer.save(user=self.request.user)
-    
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Apagado com sucesso"}, status=200)
+
     @action(detail=True, methods=['post'])
     def reset_sheet(self, request, pk=None):
         """Reseta a ficha do personagem para o template do sistema"""
