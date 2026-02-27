@@ -9,7 +9,7 @@ from .models import Character, RPGSystem
 class RPGSystemAdminForm(forms.ModelForm):
     class Meta:
         model = RPGSystem
-        fields = ['name', 'description', 'base_sheet_data', 'is_active', 'is_default']
+        fields = ['name', 'logo_url', 'description', 'base_sheet_data', 'is_active', 'is_default']
         widgets = {
             'base_sheet_data': Textarea(attrs={'rows': 20, 'cols': 80, 'style': 'font-family: monospace;'}),
             'description': Textarea(attrs={'rows': 4, 'cols': 80}),
@@ -27,7 +27,7 @@ class RPGSystemAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('name', 'description')
+            'fields': ('name', 'logo_url', 'description')
         }),
         ('Template da Ficha', {
             'fields': ('base_sheet_data',),

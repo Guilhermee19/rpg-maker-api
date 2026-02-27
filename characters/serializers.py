@@ -12,6 +12,7 @@ class RPGSystemSerializer(serializers.ModelSerializer):
         fields = [
             "slug",
             "name", 
+            "logo_url", 
             "description",
             "base_sheet_data",
             "is_active",
@@ -35,6 +36,7 @@ class RPGSystemListSerializer(serializers.ModelSerializer):
         fields = [
             "slug",
             "name", 
+            'logo_url',
             "description",
             "is_active",
             "is_default",
