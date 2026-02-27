@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Character, RPGSystem
 
+
 class RPGSystemSerializer(serializers.ModelSerializer):
     """Serializer para RPGSystem model"""
     
@@ -74,34 +75,16 @@ class CharacterSerializer(serializers.ModelSerializer):
                 'email': obj.user.email
             }
         return None
-    
-    def to_representation(self, instance):
-        """Permite escrever rpg_system como slug ao criar/atualizar"""
-        data = super().to_representation(instance)
-        return data
-    
-    def create(self, validated_data):
-        """Override create para aplicar template do sistema"""
-        rpg_system = validated_data.get('rpg_system')
-        
-        # Se não foi fornecido um sistema, usa o padrão
-        if not rpg_system:
-            rpg_system = RPGSystem.get_default_system()
-            validated_data['rpg_system'] = rpg_system
-        
-        # Se não foi fornecido sheet_data e tem sistema, usa o template do sistema
-        if not validated_data.get('sheet_data') and rpg_system:
-            validated_data['sheet_data'] = rpg_system.base_sheet_data
-        
-        return super().create(validated_data)
 
 
 class CharacterCreateSerializer(serializers.ModelSerializer):
     """Serializer específico para criação de personagens"""
     
-    rpg_system = serializers.PrimaryKeyRelatedField(
-        queryset=RPGSystem.objects.filter(is_active=True), 
-        required=False, 
+    # slug é a PK do RPGSystem
+    rpg_system = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=RPGSystem.objects.filter(is_active=True),
+        required=False,
         allow_null=True
     )
     
@@ -115,24 +98,28 @@ class CharacterCreateSerializer(serializers.ModelSerializer):
         ]
     
     def create(self, validated_data):
-        """Cria personagem com template base do sistema"""
+        """
+        Cria personagem garantindo que o sheet_data venha do base_sheet_data
+        do rpg_system selecionado. O Character.save() cuida disso, mas forçamos
+        aqui também para garantir consistência mesmo sem passar pelo save().
+        """
         rpg_system = validated_data.get('rpg_system')
-        
+
         # Se não foi fornecido um sistema, usa o padrão
         if not rpg_system:
             rpg_system = RPGSystem.get_default_system()
-            validated_data['rpg_system'] = rpg_system
-        
-        # Aplica o template base do sistema
+            if rpg_system:
+                validated_data['rpg_system'] = rpg_system
+
+        # Sempre aplica o template do sistema ao criar
         if rpg_system and rpg_system.base_sheet_data:
             validated_data['sheet_data'] = rpg_system.base_sheet_data
-        
+
         character = super().create(validated_data)
         return character
     
     def to_representation(self, instance):
         """Retorna a representação completa do personagem criado"""
-        # Constrói manualmente para evitar problemas com async
         rpg_system_data = None
         if instance.rpg_system:
             rpg_system_data = {

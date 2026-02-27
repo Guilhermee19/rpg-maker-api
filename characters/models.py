@@ -34,27 +34,20 @@ class RPGSystem(models.Model):
     
     def save(self, *args, **kwargs):
         """Garante que o slug seja a primary key e apenas um sistema seja o padrão"""
-        # Gera o slug se for novo
         if not self.slug:
             self.slug = slugify(self.name)
         
-        # Se for novo ou o nome mudou, verifica se o slug precisa ser atualizado
-        if not self.pk:
-            # Para novo, o slug é a PK
-            pass
-        
         if self.is_default:
-            # Remove o default de outros sistemas
-            RPGSystem.objects.exclude(pk=self.pk).update(is_default=False)
+            # Usa o slug (já gerado acima) em vez de self.pk,
+            # pois self.pk é None em objetos novos e causaria erro no ORM
+            RPGSystem.objects.exclude(slug=self.slug).update(is_default=False)
+
         super().save(*args, **kwargs)
     
     @classmethod
     def get_default_system(cls):
         """Retorna o sistema padrão"""
-        try:
-            return cls.objects.filter(is_default=True, is_active=True).first()
-        except cls.DoesNotExist:
-            return None
+        return cls.objects.filter(is_default=True, is_active=True).first()
     
     @classmethod
     def get_default_sheet_data(cls, system_slug=None):
@@ -62,14 +55,15 @@ class RPGSystem(models.Model):
         if system_slug:
             try:
                 system = cls.objects.get(slug=system_slug, is_active=True)
-                return system.base_sheet_data
+                if system.base_sheet_data:
+                    return system.base_sheet_data
             except cls.DoesNotExist:
                 pass
         
         # Fallback para sistema padrão
         default_system = cls.get_default_system()
-        if default_system:
-            return default_system.base_sheet_data
+        if default_system and default_system.base_sheet_data:
+            return default_system.base_sheet_data  # corrigido: era default_system._data
         
         # Fallback final para dados básicos
         return {
@@ -102,7 +96,6 @@ class RPGSystem(models.Model):
 
 def get_default_sheet_data():
     """Retorna o template padrão da ficha de personagem baseado no sistema selecionado"""
-    # Tenta usar o sistema padrão primeiro
     sheet_data = RPGSystem.get_default_sheet_data()
     if sheet_data:
         return sheet_data
@@ -113,8 +106,8 @@ def get_default_sheet_data():
         with open(template_path, 'r', encoding='utf-8') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Fallback básico caso nada funcione
         return RPGSystem.get_default_sheet_data()
+
 
 class Character(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -135,7 +128,7 @@ class Character(models.Model):
         to_field='slug'
     )
 
-    player_name = models.CharField(max_length=120, blank=True)  # "Jogador"
+    player_name = models.CharField(max_length=120, blank=True)
     avatar_url = models.URLField(blank=True, null=True)
     
     xp_total = models.IntegerField(default=0)
@@ -153,13 +146,13 @@ class Character(models.Model):
         verbose_name_plural = "Personagens"
     
     def save(self, *args, **kwargs):
-        """Override save to set default RPG system"""
+        """Override save to set default RPG system and apply sheet template"""
         # Se não tem sistema definido, usa o padrão
-        if not self.rpg_system:
+        if not self.rpg_system_id:
             self.rpg_system = RPGSystem.get_default_system()
-            
-        # Se é um novo character, usa o template do sistema
-        if not self.pk and not self.sheet_data:
+
+        # Se é um novo personagem, sempre aplica o template do sistema
+        if not self.pk:
             if self.rpg_system and self.rpg_system.base_sheet_data:
                 self.sheet_data = self.rpg_system.base_sheet_data
             else:

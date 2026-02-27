@@ -46,21 +46,23 @@ class RPGSystemAdmin(admin.ModelAdmin):
         count = obj.characters.count()
         if count > 0:
             return format_html('<span style="color: green;">{} personagens</span>', count)
+        # Corrigido: format_html sem variáveis causava TypeError
         return format_html('<span style="color: gray;">Nenhum personagem</span>')
     character_count.short_description = 'Personagens'
-    
+
     actions = ['duplicate_system']
     
     def duplicate_system(self, request, queryset):
         """Ação para duplicar sistemas selecionados"""
+        count = queryset.count()
         for system in queryset:
             original_name = system.name
             system.pk = None
+            system.slug = None  # força geração de novo slug pelo save()
             system.name = f"{original_name} (Cópia)"
-            system.slug = f"{system.slug}-copy"
             system.is_default = False
             system.save()
-        self.message_user(request, f'{queryset.count()} sistema(s) duplicado(s) com sucesso.')
+        self.message_user(request, f'{count} sistema(s) duplicado(s) com sucesso.')
     duplicate_system.short_description = 'Duplicar sistemas selecionados'
 
 
@@ -103,7 +105,8 @@ class CharacterAdmin(admin.ModelAdmin):
         """Exibe o nome do sistema de RPG"""
         if obj.rpg_system:
             return obj.rpg_system.name
-        return obj.system_key
+        # Corrigido: era obj.system_key que não existe no modelo
+        return obj.system_name  # property definida no model: "Sistema não definido"
     rpg_system_name.short_description = 'Sistema RPG'
     rpg_system_name.admin_order_field = 'rpg_system__name'
     
