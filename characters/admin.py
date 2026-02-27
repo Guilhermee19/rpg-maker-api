@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.forms.widgets import Textarea
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Character, RPGSystem
 
 
@@ -47,7 +48,7 @@ class RPGSystemAdmin(admin.ModelAdmin):
         if count > 0:
             return format_html('<span style="color: green;">{} personagens</span>', count)
         # Corrigido: format_html sem variáveis causava TypeError
-        return format_html('<span style="color: gray;">Nenhum personagem</span>')
+        return mark_safe('<span style="color: gray;">Nenhum personagem</span>')
     character_count.short_description = 'Personagens'
 
     actions = ['duplicate_system']
