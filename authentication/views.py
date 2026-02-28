@@ -130,8 +130,16 @@ def forgot_password(request):
             fail_silently=False,
         )
     except User.DoesNotExist:
-        # Silencioso: não revelamos que o email não existe
         pass
+    except Exception as e:
+        # Loga o erro real sem retornar 500
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Erro ao enviar email de reset: {str(e)}')
+        return Response(
+            {'error': f'Erro ao enviar email: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     return Response(
         {'message': 'Se este email estiver cadastrado, você receberá as instruções em breve.'},
