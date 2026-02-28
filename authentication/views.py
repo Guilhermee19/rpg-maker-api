@@ -4,11 +4,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .serializers import EmailTokenObtainPairSerializer, UserRegisterSerializer
-
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import PasswordResetToken
+from .serializers import ForgotPasswordSerializer, ResetPasswordSerializer
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,6 +90,96 @@ def get_user(request):
         'user': serializer.data
     }, status=status.HTTP_200_OK)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    """
+    Envia email com link de redefinição de senha.
+    Sempre retorna 200 para não revelar se o email existe.
+    """
+    serializer = ForgotPasswordSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    email = serializer.validated_data['email']
+
+    try:
+        user = User.objects.get(email__iexact=email)
+        reset_token = PasswordResetToken.generate_token(user)
+
+        reset_url = (
+            f"{settings.FRONTEND_URL}/reset-password"
+            f"?email={email}"
+            f"&token={reset_token.token}"
+        )
+
+        send_mail(
+            subject='Redefinição de senha',
+            message=(
+                f'Olá, {user.first_name or user.username}!\n\n'
+                f'Recebemos uma solicitação para redefinir sua senha.\n'
+                f'Clique no link abaixo para criar uma nova senha:\n\n'
+                f'{reset_url}\n\n'
+                f'Este link expira em {PasswordResetToken.EXPIRY_HOURS} horas.\n'
+                f'Se você não solicitou isso, ignore este email.'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+    except User.DoesNotExist:
+        # Silencioso: não revelamos que o email não existe
+        pass
+
+    return Response(
+        {'message': 'Se este email estiver cadastrado, você receberá as instruções em breve.'},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    """
+    Redefine a senha usando email + token hash recebidos no link.
+    """
+    serializer = ResetPasswordSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    email = serializer.validated_data['email']
+    token_value = serializer.validated_data['token']
+    new_password = serializer.validated_data['new_password']
+
+    try:
+        user = User.objects.get(email__iexact=email)
+        reset_token = PasswordResetToken.objects.get(token=token_value, user=user)
+    except (User.DoesNotExist, PasswordResetToken.DoesNotExist):
+        return Response(
+            {'error': 'Token inválido ou expirado.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not reset_token.is_valid():
+        return Response(
+            {'error': 'Token inválido ou expirado.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Atualiza a senha e invalida o token
+    user.set_password(new_password)
+    user.save()
+
+    reset_token.used = True
+    reset_token.save()
+
+    return Response(
+        {'message': 'Senha redefinida com sucesso.'},
+        status=status.HTTP_200_OK,
+    )
 
 class CustomTokenRefreshView(TokenRefreshView):
     """Custom refresh token view"""
