@@ -233,4 +233,4 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 # URL base do frontend para montar o link no email
-FRONTEND_URL = 'https://rpg-maker-hub.vercel.app/'
+FRONTEND_URL = 'https://rpg-maker-hub.vercel.app'
