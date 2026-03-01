@@ -1,3 +1,24 @@
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
+class PlayerSessionsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Sessões em que o usuário é membro, mas não é o mestre
+        sessions = Session.objects.filter(members__user=request.user).exclude(master=request.user).distinct()
+        serializer = SessionSerializer(sessions, many=True, context={"request": request})
+        return Response(serializer.data)
+
+
+class MasterSessionsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Sessões em que o usuário é o mestre
+        sessions = Session.objects.filter(master=request.user)
+        serializer = SessionSerializer(sessions, many=True, context={"request": request})
+        return Response(serializer.data)
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
