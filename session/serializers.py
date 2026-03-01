@@ -107,9 +107,10 @@ class SessionDetailSerializer(serializers.ModelSerializer):
 
 
 class SessionSerializer(serializers.ModelSerializer):
+    invites = SessionInviteDetailSerializer(many=True, read_only=True)
     class Meta:
         model = Session
-        fields = ["id", "master", "name", "description", "banner", "status", "created_at", "updated_at"]
+        fields = ["id", "master", "name", "description", "banner", "status", "created_at", "updated_at", "invites"]
         read_only_fields = ("id", "master", "created_at", "updated_at")
 
 
